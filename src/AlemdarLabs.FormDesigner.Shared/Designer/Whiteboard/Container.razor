@@ -1,0 +1,306 @@
+﻿@inject IJSRuntime JSRuntime
+
+<div class="container-wrapper"
+     onmouseover="formDesigner.highlihter.activate(event, @ComponentHighlighterCssClass)">
+    <div class="widget-wrapper"
+         @onclick="OnClickCallback"
+         @onclick:preventDefault="true"
+         @onclick:stopPropagation="true"
+         onmouseout="formDesigner.highlihter.deactivate(event, @ComponentHighlighterCssClass)">
+
+        @for (int rowIndex = 0; rowIndex < ContainerData.Rows.Count; rowIndex++)
+        {
+            var currentRowIndex = rowIndex;
+            var currentRow = ContainerData.Rows[currentRowIndex];
+
+            @if (currentRowIndex == 0 && !ContainerData.IsEmpty())
+            {
+                Guid divId = Guid.NewGuid();
+                <div id="@divId"
+                     class="row dropRow"
+                     ondragover="event.preventDefault();"
+                     ondragenter="event.preventDefault();formDesigner.utils.addClass(this, @DropZoneCssClasses)"
+                     ondragleave="event.preventDefault();formDesigner.utils.removeClass(this, @DropZoneCssClasses)"
+                     @ondrop="@(async (e) =>
+                                {
+                                    await DropComponentBeforeRowAsync(currentRowIndex, ContainerData);
+                                    await OnDropFinishedAsync(divId);
+                                })"
+                     @ondrop:preventDefault="true">
+                </div>
+            }
+
+            bool isMoveRowUpVisible = IsMoveRowUpVisible(currentRow);
+            bool isMoveRowDownVisible = IsMoveRowDownVisible(currentRow);
+            bool isRowElement = isMoveRowUpVisible ||
+                isMoveRowDownVisible ||
+                ContainerData?.Rows.Count > 0;
+            string rowElementClass = isRowElement ? "row-element" : "";
+            string rowSeparatorClass = currentRowIndex == ContainerData.Rows.Count - 1 ?
+                "row-separator" : "";
+
+            <div class="row row-builder @rowElementClass @rowSeparatorClass">
+
+                @if (isRowElement)
+                {
+                    <div class="component-caption component-caption--row">
+                        <span class="container-title">Row</span>
+
+                        @if (isMoveRowUpVisible)
+                        {
+                            <MatIconButton Icon="@MatIconNames.Arrow_upward"
+                                           OnClick="@(async () => await MoveRowUpAsync(currentRow))"
+                                           OnClickStopPropagation="true"
+                                           Class="component-mover-icon"
+                                           Title="Move Row Up" />
+                        }
+
+                        @if (isMoveRowDownVisible)
+                        {
+                            <MatIconButton Icon="@MatIconNames.Arrow_downward"
+                                           OnClick="@(async () => await MoveRowDownAsync(currentRow))"
+                                           OnClickStopPropagation="true"
+                                           Class="component-mover-icon"
+                                           Title="Move Row Down" />
+                        }
+
+                    </div>
+                }
+
+                @for (int componentIndex = 0; componentIndex < currentRow.Count; componentIndex++)
+                {
+                    var currentComponentIndex = componentIndex;
+                    var currentComponent = currentRow[componentIndex];
+                    string componentColumnWidth =
+                        ComponentUtils.GetComponentColumnCssClasses(currentComponent);
+
+                    <div class="draggable @componentColumnWidth"
+                         draggable="true"
+                         @ondragstart="@(async () =>
+                                         {
+                                             await DragComponentStartAsync(currentComponent, currentRow, ContainerData);
+                                         })">
+                        <CascadingValue Value="this" Name="Container">
+                            <Component ComponentData="@currentComponent"
+                                       ComponentRow="@currentRow"
+                                       ComponentIndex="@currentComponentIndex" />
+                        </CascadingValue>
+                    </div>
+                }
+
+                @{
+                    int rowSize = CalculateRowSize(currentRow);
+                }
+
+                @if (rowSize < ComponentUtils.MaxColumnWidth)
+                {
+                    int columnSize = ComponentUtils.MaxColumnWidth - rowSize;
+                    Guid divId = Guid.NewGuid();
+                    <div id="@divId"
+                         class="widget-placeholder drop-container col-@columnSize d-flex justify-content-center text-center"
+                         data-col="@columnSize"
+                         ondragover="event.preventDefault();"
+                         ondragenter="event.preventDefault();formDesigner.utils.addClass(this, @DropZoneCssClasses)"
+                         ondragleave="event.preventDefault();formDesigner.utils.removeClass(this, @DropZoneCssClasses)"
+                         @ondrop="@(async () =>
+                                    {
+                                        await DropComponentToEndOfRowAsync(ContainerData, currentRow);
+                                        await OnDropFinishedAsync(divId);
+                                    })"
+                         @ondrop:preventDefault="true">
+                    </div>
+                }
+
+            </div>
+
+            @if (!ContainerData.IsEmpty())
+            {
+                Guid divId = Guid.NewGuid();
+                var isLastDropRow = currentRowIndex == ContainerData?.Rows.Count - 1 ? "dropRow--last" : "";
+                <div id="@divId"
+                     class="row dropRow @isLastDropRow"
+                     ondragover="event.preventDefault();"
+                     ondragenter="event.preventDefault();formDesigner.utils.addClass(this, 'bo-dropzone-hover bo-drag-enter')"
+                     ondragleave="event.preventDefault();formDesigner.utils.removeClass(this, 'bo-dropzone-hover bo-drag-enter')"
+                     @ondrop="@(async () =>
+                                {
+                                    await DropComponentAfterRowAsync(currentRowIndex, ContainerData);
+                                    await OnDropFinishedAsync(divId);
+                                })"
+                     @ondrop:preventDefault="true">
+                </div>
+            }
+        }
+
+    </div>
+</div>
+
+@code {
+    [CascadingParameter(Name = "FormDesigner")]
+    public FormDesigner FormDesigner { get; set; }
+
+    [Parameter]
+    public EventCallback<MouseEventArgs> OnClickCallback { get; set; }
+
+    [Parameter]
+    public ContainerDto ContainerData { get; set; }
+
+    private const string ComponentHighlighterCssClass = @"'component-element--hover'";
+    private const string DropZoneCssClasses = @"'bo-dropzone-hover bo-drag-enter'";
+    private const string DropZoneCssClassesWithoutSingleQuotes = @"bo-dropzone-hover bo-drag-enter";
+
+    #region Move Row Up-Down Methods
+    private bool IsMoveRowUpVisible(List<ComponentDto> componentsInRow)
+    {
+        return ContainerData.Rows.IsMoveLeftPossible(componentsInRow);
+    }
+
+    private bool IsMoveRowDownVisible(List<ComponentDto> componentsInRow)
+    {
+        return ContainerData.Rows.IsMoveRightPossible(componentsInRow);
+    }
+
+    private async Task MoveRowUpAsync(List<ComponentDto> componentsInRow)
+    {
+        ContainerData.Rows.MoveLeft(componentsInRow);
+        await Task.CompletedTask;
+    }
+
+    private async Task MoveRowDownAsync(List<ComponentDto> componentsInRow)
+    {
+        ContainerData.Rows.MoveRight(componentsInRow);
+        await Task.CompletedTask;
+    }
+    #endregion Move Row Up-Down Methods
+
+    #region Drag and Drop Methods
+    private async Task DragComponentStartAsync(ComponentDto draggedItemData,
+        List<ComponentDto> currentRow, ContainerDto currentContainer)
+    {
+        await FormDesigner.SetDraggedComponentAsync(draggedItemData, currentRow, currentContainer);
+    }
+
+    private async Task DropComponentBeforeRowAsync(int rowIndex,
+        ContainerDto currentContainer)
+    {
+        var newRow = new List<ComponentDto>();
+        currentContainer.Rows.Insert(rowIndex, newRow);
+
+        await DropComponentToEndOfRowAsync(currentContainer, newRow);
+    }
+
+    private async Task DropComponentAfterRowAsync(int rowIndex,
+        ContainerDto currentContainer)
+    {
+        var newRow = new List<ComponentDto>();
+        var newRowIndex = rowIndex + 1;
+        currentContainer.Rows.Insert(newRowIndex, newRow);
+
+        await DropComponentToEndOfRowAsync(currentContainer, newRow);
+    }
+
+    private async Task DropComponentToEndOfRowAsync(ContainerDto containerData,
+        List<ComponentDto> destinationRow)
+    {
+        if (FormDesigner.IsDraggedItemPaletteWidget())
+        {
+            // you are trying to drag and drop a new widget from Palette
+            var paletteWidgetData = await FormDesigner.GetDraggedPaletteWidgetAsync();
+            var newComponentData = paletteWidgetData.CreateComponent();
+            await AddComponentToRowAsync(newComponentData, destinationRow);
+            await FormDesigner.SelectComponentAsync(newComponentData);
+        }
+        else if (FormDesigner.IsDraggedItemComponent())
+        {
+            // you are trying to drag and drop a widget already defined in whiteboard
+            var componentData = await FormDesigner.GetDraggedComponentDataAsync();
+            var originRow = await FormDesigner.GetDraggedComponentOriginRowAsync();
+
+            // de-attach widget from its previous position in origin row
+            await DetachComponentFromPreviousRowAsync(componentData, originRow);
+
+            // TODO: Check is component movable
+
+            // add component to destination row
+            await AddComponentToRowAsync(componentData, destinationRow);
+
+            if (originRow.Count == 0)
+            {
+                var originContainer = await FormDesigner.GetDraggedComponentOriginContainerAsync();
+                originContainer.Rows.Remove(originRow);
+                originRow = null;
+            }
+
+            await FormDesigner.SelectComponentAsync(componentData);
+        }
+        else
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    private async Task OnDropFinishedAsync(Guid elementId)
+    {
+        await JSRuntime.InvokeVoidAsync("formDesigner.utils.removeClassById",
+            elementId, DropZoneCssClassesWithoutSingleQuotes);
+    }
+    #endregion Drag and Drop Methods
+
+    #region Helper Methods
+
+    /// <summary>
+    /// Add component to dropped row and re-compute each item size in that row
+    /// </summary>
+    /// <param name="componentData"></param>
+    /// <param name="currentRow"></param>
+    /// <returns></returns>
+    private async Task AddComponentToRowAsync(ComponentDto componentData,
+        List<ComponentDto> currentRow)
+    {
+        currentRow.Add(componentData);
+        ComponentUtils.ComputeEachItemSizeInRow(currentRow);
+        await Task.CompletedTask;
+    }
+
+    private async Task DetachComponentFromPreviousRowAsync(ComponentDto componentData,
+        List<ComponentDto> destinationRow)
+    {
+        var originRow = await FormDesigner.GetDraggedComponentOriginRowAsync();
+
+        // remove component from origin row
+        originRow.Remove(componentData);
+
+        var originContainer = await FormDesigner.GetDraggedComponentOriginContainerAsync();
+
+        if (destinationRow?.Count == 0 && destinationRow != originRow)
+        {
+            await originContainer.RemoveRowAsync(originRow);
+        }
+
+        if (originRow?.Count == 0 && destinationRow != originRow)
+        {
+            await originContainer.RemoveRowAsync(originRow);
+        }
+
+        await FormDesigner.SelectComponentAsync(null);
+    }
+
+    /// <summary>
+    /// Returns the CSS column width that must be used by a component in the editor
+    /// to reflect its width and the currently selected resolution.
+    /// </summary>
+    /// <param name="componentsInRow"></param>
+    /// <returns></returns>
+    private int CalculateRowSize(List<ComponentDto> componentsInRow)
+    {
+        int size = 0;
+
+        foreach (var component in componentsInRow)
+        {
+            size += ComponentUtils.CalculateColumnWidth(component);
+        }
+
+        return size;
+    }
+    #endregion Helper Methods
+}

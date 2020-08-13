@@ -1,0 +1,28 @@
+﻿@inherits PropertiesComponentBase
+
+<form class="d-flex flex-column" novalidate>
+    <div class="prop-group-box">
+        <div class="box-header">Defaults</div>
+        <div class="padding-8">
+            <div class="form-group">
+                <label for="@ComponentData.Id-width"
+                       class="col-form-label">
+                    Width
+                </label>
+                <input id="@ComponentData.Id-width"
+                       class="form-control"
+                       type="number"
+                       min="1"
+                       max="@ComponentUtils.MaxColumnWidth"
+                       required
+                       value="@ComponentData.Width"
+                       @oninput="OnWidthChangedAsync" />
+            </div>
+        </div>
+    </div>
+</form>
+
+
+@code {
+
+}

@@ -1,0 +1,98 @@
+﻿@{
+    bool isSelectedComponent =
+        FormDesigner.IsSelectedComponent(ComponentData);
+    string selectedComponentClass = isSelectedComponent ? "component-element--selected" : "";
+    string tabsContainerClass = ComponentData?.Type == ComponentType.Tabs ? "container-element" : "";
+}
+
+<div class="component-element @Class @selectedComponentClass @tabsContainerClass"
+     @onclick="SelectComponentAsync"
+     @onclick:stopPropagation="true">
+    <div class="widget-wrapper">
+        @if (isSelectedComponent)
+        {
+            <ComponentMover Component="@ComponentData"
+                            ComponentsInParentRow="ComponentRow" />
+        }
+
+        <div class="widget-content">
+            @switch (ComponentData?.Type)
+            {
+                case ComponentType.SingleLine:
+                    <SingleLineComp Component="@ComponentData" />
+                    break;
+
+                case ComponentType.MultiLine:
+                    <MultiLineComp Component="@ComponentData" />
+                    break;
+
+                case ComponentType.Email:
+                    <EmailComp Component="@ComponentData" />
+                    break;
+
+                case ComponentType.Link:
+                    <LinkComp Component="@ComponentData" />
+                    break;
+
+                case ComponentType.Checkbox:
+                    <CheckboxComp Component="@ComponentData" />
+                    break;
+
+                case ComponentType.Number:
+                    <NumberComp Component="@ComponentData" />
+                    break;
+
+                case ComponentType.File:
+                    <FileComp Component="@ComponentData" />
+                    break;
+
+                case ComponentType.DateTime:
+                    <DateTimeComp Component="@ComponentData" />
+                    break;
+
+                case ComponentType.Tabs:
+                    <TabsComp ComponentData="@ComponentData"
+                              ComponentRow="@ComponentRow"
+                              TabContainerList="@ComponentData.ChildContainers" />
+                    break;
+
+                default:
+                    throw new NotImplementedException(@$"ComponentType: '{ComponentData?.Type}' is not implemented");
+            }
+        </div>
+
+        @if (ComponentData?.Type != ComponentType.Tabs)
+        {
+            <DropZone Container="@Container"
+                      ComponentRow="@ComponentRow"
+                      ComponentIndex="@ComponentIndex"
+                      ComponentData="@ComponentData" />
+        }
+
+    </div>
+</div>
+
+@code {
+    [CascadingParameter(Name = "FormDesigner")]
+    public FormDesigner FormDesigner { get; set; }
+
+    [Parameter]
+    public ContainerDto Container { get; set; }
+
+    [Parameter]
+    public ComponentDto ComponentData { get; set; }
+
+    [Parameter]
+    public List<ComponentDto> ComponentRow { get; set; }
+
+    [Parameter]
+    public int ComponentIndex { get; set; }
+
+    [Parameter]
+    public string Class { get; set; }
+
+    private async Task SelectComponentAsync()
+    {
+        await FormDesigner.SelectComponentAsync(ComponentData);
+    }
+}

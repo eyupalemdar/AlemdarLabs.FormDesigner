@@ -1,0 +1,162 @@
+﻿@{
+    bool isSelectedComponent =
+        FormDesigner.IsSelectedComponent(ComponentData);
+}
+
+<div class="widget-wrapper">
+    @if (isSelectedComponent)
+    {
+        <ComponentMover Component="@ComponentData"
+                        ComponentsInParentRow="ComponentRow" />
+    }
+
+    <ul class="nav nav-tabs" role="tablist">
+        @foreach (var tabContainer in TabContainerList)
+        {
+            var activeTabClass = IsTabOpened(tabContainer) ? "active" : "";
+
+            <li class="nav-item">
+                <a class="nav-link d-flex flex-row clickable @activeTabClass"
+                   @onclick="@(async () => await OpenTabAsync(tabContainer))"
+                   @onclick:preventDefault="true"
+                   @onclick:stopPropagation="true">
+                    @if (IsMoveTabLeftVisible(tabContainer))
+                    {
+                        <MatIconButton Icon="@MatIconNames.Arrow_back"
+                                       OnClick="@(async () => await MoveTabLeftAsync(tabContainer))"
+                                       OnClickStopPropagation="true"
+                                       Class="component-mover-icon tab-color"
+                                       title="Move Left" />
+                    }
+                    @if (IsMoveTabRightVisible(tabContainer))
+                    {
+                        <MatIconButton Icon="@MatIconNames.Arrow_forward"
+                                       OnClick="@(async () => await MoveTabRightAsync(tabContainer))"
+                                       OnClickStopPropagation="true"
+                                       Class="component-mover-icon tab-color"
+                                       title="Move Right" />
+                    }
+                    <span class="tab-title">@tabContainer.Label</span>
+                    @if (IsRemoveTabVisible(tabContainer))
+                    {
+                        <MatIconButton Icon="@MatIconNames.Cancel"
+                                       OnClick="@(async () => await OnTabDeleteAsync(tabContainer))"
+                                       OnClickStopPropagation="true"
+                                       Class="component-mover-icon tab-color"
+                                       title="Delete" />
+                    }
+                </a>
+            </li>
+        }
+        <li class="nav-item">
+            <a class="nav-link d-flex flex-row clickable"
+               title="Add Tab"
+               @onclick="@(async () => await AddTabAsync())"
+               @onclick:preventDefault="true">
+                <MatIconButton Icon="@MatIconNames.Add"
+                               Class="component-mover-icon tab-color" />
+            </a>
+        </li>
+    </ul>
+
+    @foreach (var tabContainer in TabContainerList)
+    {
+        @if (IsTabOpened(tabContainer) || IsThereOnlyOneTab())
+        {
+            <Container ContainerData="tabContainer"
+                       OnClickCallback="@(async (e) => await FormDesigner.SelectContainerAsync(tabContainer))" />
+        }
+    }
+</div>
+
+@code {
+    [CascadingParameter(Name = "FormDesigner")]
+    public FormDesigner FormDesigner { get; set; }
+
+    [Parameter]
+    public ComponentDto ComponentData { get; set; }
+
+    [Parameter]
+    public List<ComponentDto> ComponentRow { get; set; }
+
+    [Parameter]
+    public List<ContainerDto> TabContainerList { get; set; }
+
+    private ContainerDto ActiveTabContainer = null;
+
+    private async Task OpenTabAsync(ContainerDto tabContainer)
+    {
+        ActiveTabContainer = tabContainer;
+        await FormDesigner.SelectContainerAsync(ActiveTabContainer);
+    }
+
+    private async Task AddTabAsync()
+    {
+        var newTabContainer = new ContainerDto(ContainerType.Tab)
+        {
+            Label = @$"Tab {TabContainerList?.Count + 1}"
+        };
+
+        TabContainerList.Add(newTabContainer);
+        await OpenTabAsync(newTabContainer);
+    }
+
+    private bool IsTabOpened(ContainerDto tabContainer)
+    {
+        return ActiveTabContainer == tabContainer;
+    }
+
+    private bool IsThereOnlyOneTab()
+    {
+        return TabContainerList?.Count == 1;
+    }
+
+    private bool IsRemoveTabVisible(ContainerDto tabContainer)
+    {
+        return FormDesigner.IsSelectedContainer(tabContainer) && TabContainerList.Count > 1;
+    }
+
+    private async Task OnTabDeleteAsync(ContainerDto tabContainer)
+    {
+        int containerIndex = TabContainerList.IndexOf(tabContainer);
+        TabContainerList.RemoveAt(containerIndex);
+
+        containerIndex = containerIndex > TabContainerList.Count - 1 ? TabContainerList.Count - 1 : containerIndex;
+
+        var previousTabContainer = TabContainerList[containerIndex];
+        await OpenTabAsync(previousTabContainer);
+    }
+
+    #region Move Tab Left-Right Methods
+    private bool IsMoveTabLeftVisible(ContainerDto tabContainer)
+    {
+        return TabContainerList.IsMoveLeftPossible(tabContainer);
+    }
+
+    private bool IsMoveTabRightVisible(ContainerDto tabContainer)
+    {
+        return TabContainerList.IsMoveRightPossible(tabContainer);
+    }
+
+    private async Task MoveTabLeftAsync(ContainerDto tabContainer)
+    {
+        TabContainerList.MoveLeft(tabContainer);
+        await Task.CompletedTask;
+    }
+
+    private async Task MoveTabRightAsync(ContainerDto tabContainer)
+    {
+        TabContainerList.MoveRight(tabContainer);
+        await Task.CompletedTask;
+    }
+    #endregion Move Row Up-Down Methods
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+
+        var firstTabContainer = TabContainerList[0];
+        ActiveTabContainer = firstTabContainer;
+    }
+
+}

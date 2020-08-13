@@ -1,0 +1,86 @@
+﻿:root {
+    --fd-primary-color: #87CEFA; /* Orange: #fe7109, Blue: #87CEFA */
+}
+
+.no-padding {
+    padding: 0px;
+}
+
+.no-margin {
+    margin: 0px;
+}
+
+.user-select-none {
+    -webkit-user-select: none; /* Chrome all / Safari all */
+    -moz-user-select: none; /* Firefox all */
+    -ms-user-select: none; /* IE 10+ */
+    user-select: none; /* Likely future */
+}
+
+.col-form-label--required:after {
+    content: " *";
+    color: #a94442;
+}
+
+.section-header {
+    position: relative;
+    background: #e3e3e3 none repeat scroll 0 0;
+    clear: both;
+    color: #454545;
+    font-family: Roboto;
+    font-size: 10px;
+    font-weight: bold;
+    padding: 5px;
+    text-transform: uppercase;
+    margin: 0px;
+    /*box-shadow: -12px 8px 20px 3px #f1f1f1;*/
+}
+
+.section-header-title {
+    line-height: 23px;
+    font-size: 12px;
+    font-weight: 100;
+    margin: auto;
+}
+
+/* Force number input stop show spinner */
+.input-number-hover input[type=number]::-webkit-inner-spin-button {
+    opacity: 1
+}
+
+/* * * * * * * * * *
+ * Custom Scrollbar
+ * * * * * * * * * */
+.fd-scrollbar {
+    overflow-y: scroll;
+}
+
+    .fd-scrollbar::-webkit-scrollbar-track {
+        -webkit-box-shadow: inset 0 0 6px rgba(191,191,191,.7);
+        background-color: rgba(233, 233, 233, .7);
+        box-shadow: 0 0 0 1px transparent;
+        border-top-left-radius: 4px;
+        border-top-right-radius: 4px;
+        border-bottom-left-radius: 4px;
+        border-bottom-right-radius: 4px;
+    }
+
+    .fd-scrollbar::-webkit-scrollbar {
+        width: 5px;
+        background-color: rgba(191,191,191,.7);
+        box-shadow: 0 0 0 1px transparent;
+        border-top-left-radius: 4px;
+        border-top-right-radius: 4px;
+        border-bottom-left-radius: 4px;
+        border-bottom-right-radius: 4px;
+    }
+
+    .fd-scrollbar::-webkit-scrollbar-thumb {
+        background-color: var(--fd-primary-color);
+        border: 2px solid var(--fd-primary-color);
+        box-shadow: 0 0 0 1px transparent;
+        border-top-left-radius: 4px;
+        border-top-right-radius: 4px;
+        border-bottom-left-radius: 4px;
+        border-bottom-right-radius: 4px;
+    }

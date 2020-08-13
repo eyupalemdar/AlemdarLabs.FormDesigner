@@ -1,0 +1,129 @@
+﻿.component-caption {
+    color: #F5F5F5;
+    position: absolute;
+    top: -1.32em;
+    left: 1.0em;
+    background-color: var(--fd-primary-color);
+    line-height: 1.5;
+    opacity: 0;
+    z-index: 50;
+    visibility: hidden;
+    display: inline-block;
+    white-space: nowrap;
+    font-size: 15px;
+}
+
+.component-caption--row {
+    left: -5px;
+    background-color: #aaa;
+    box-shadow: 0 0 4px #aaa;
+    top: -1.7em;
+}
+
+.container-title {
+    margin: 0 5px;
+}
+
+.component-element {
+    display: block;
+    border: 1px transparent solid;
+    margin: .3em 0;
+    padding: 1px;
+}
+
+.component-element--hover {
+    border-color: var(--fd-primary-color) !important;
+    -webkit-transition: opacity .3s ease !important;
+    transition: opacity .3s ease !important;
+}
+
+.row-element.component-element--hover .component-element--selected .component-caption {
+    opacity: 0;
+    z-index: auto;
+}
+
+.row-element.component-element--hover > .component-caption {
+    opacity: 1;
+    z-index: 52;
+    -webkit-transition: opacity .3s ease;
+    transition: opacity .3s ease;
+    -webkit-transition-delay: .2s;
+    transition-delay: .2s;
+    visibility: visible;
+    display: inline-flex;
+    vertical-align: middle;
+}
+
+.row-element {
+    border: 1px transparent solid;
+    border-left: #eee 5px solid;
+    position: relative;
+}
+
+    .row-element.component-element--hover {
+        border: 1px solid #888;
+        border-left: #888 5px solid;
+        -webkit-transition: border .3s ease;
+        transition: border .3s ease;
+        -webkit-transition-delay: .2s;
+        transition-delay: .2s;
+    }
+
+.widget-content > .row {
+    margin-left: -15px;
+    margin-right: -15px;
+}
+
+.widget-content {
+    overflow-x: hidden;
+    min-height: 25px;
+    margin-right: 4px;
+    margin-left: 4px;
+}
+    /** improve wysiwyg in editor */
+    .widget-content .form-horizontal .form-group {
+        margin-bottom: 0;
+    }
+
+.widget-label-horizontal {
+    padding-top: 7px;
+    margin-bottom: 0;
+    text-align: right;
+}
+
+.component-mover-icon {
+    color: white;
+    margin: 0px 4px 0px 4px !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px !important;
+    height: 16px !important;
+    line-height: 16px !important;
+    font-size: 21px !important;
+    --mdc-ripple-fg-size: 14px !important;
+    --mdc-ripple-fg-scale: 1.71429 !important;
+    --mdc-ripple-left: 5px !important;
+    --mdc-ripple-top: 5px !important;
+}
+
+.component-element--selected {
+    border: 1px solid #1E90FF;
+    background-color: #ecf7ff;
+    -webkit-transition: opacity .3s ease;
+    transition: opacity .3s ease;
+}
+
+    .component-element--selected:hover > .widget-wrapper > .component-caption {
+        background-color: #1E90FF;
+        opacity: 1;
+        visibility: visible;
+        -webkit-transition: opacity .3s ease;
+        transition: opacity .3s ease;
+        display: inline-flex;
+        vertical-align: middle;
+    }
+
+    .component-element--selected .Component-marker {
+        color: #1E90FF;
+    }

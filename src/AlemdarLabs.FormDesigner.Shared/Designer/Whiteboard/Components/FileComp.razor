@@ -1,0 +1,19 @@
+﻿@inherits WidgetComponentBase
+
+<form>
+    <div class="form-group">
+        <label for="@Component.Id"
+               class="col-form-label">
+            @Component.Label
+        </label>
+        <div class="custom-file">
+            <input type="file" class="custom-file-input" id="@Component.Id">
+            <label class="custom-file-label" for="@Component.Id">Choose file</label>
+        </div>
+    </div>
+</form>
+
+
+@code {
+
+}

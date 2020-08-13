@@ -1,0 +1,11 @@
+﻿.clickable {
+    color: #F5F5F5;
+}
+
+.tab-title {
+    margin: 0 5px;
+}
+
+.tab-color {
+    color: rgb(52, 152, 219) !important;
+}

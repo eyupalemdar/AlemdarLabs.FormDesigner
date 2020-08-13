@@ -1,0 +1,252 @@
+﻿@inject IJSRuntime JSRuntime
+
+<div id="@leftDropZoneId"
+     class="dropZone"
+     ondragover="event.preventDefault();"
+     ondragenter="event.preventDefault();formDesigner.utils.addClass(this, @DropZoneCssClasses)"
+     ondragleave="event.preventDefault();formDesigner.utils.removeClass(this, @DropZoneCssClasses)"
+     @ondrop="@(async () =>
+                {
+                    await DropBeforeComponentAsync();
+                    await OnDropFinishedAsync(leftDropZoneId);
+                })"
+     @ondrop:preventDefault="true">
+</div>
+<div id="@rightDropZoneId"
+     class="dropZone dropZone--right"
+     ondragover="event.preventDefault();"
+     ondragenter="event.preventDefault();formDesigner.utils.addClass(this, @DropZoneCssClasses)"
+     ondragleave="event.preventDefault();formDesigner.utils.removeClass(this, @DropZoneCssClasses)"
+     @ondrop="@(async () =>
+                {
+                    await DropAfterComponentAsync();
+                    await OnDropFinishedAsync(rightDropZoneId);
+                })"
+     @ondrop:preventDefault="true">
+</div>
+
+@code {
+    private const string DropZoneCssClasses = "'bo-dropzone-hover bo-drag-enter bo-dropzone-container'";
+    private const string DropZoneCssClassesWithoutSingleQuotes = "bo-dropzone-hover bo-drag-enter bo-dropzone-container";
+    private readonly Guid leftDropZoneId = Guid.NewGuid();
+    private readonly Guid rightDropZoneId = Guid.NewGuid();
+
+    [CascadingParameter(Name = "FormDesigner")]
+    public FormDesigner FormDesigner { get; set; }
+
+    [Parameter]
+    public ContainerDto Container { get; set; }
+
+    [Parameter]
+    public List<ComponentDto> ComponentRow { get; set; }
+
+    [Parameter]
+    public ComponentDto ComponentData { get; set; }
+
+    [Parameter]
+    public int ComponentIndex { get; set; }
+
+    private async Task DropBeforeComponentAsync()
+    {
+        if (FormDesigner.IsDraggedItemPaletteWidget())
+        {
+            // you are trying to drag and drop a new widget
+            var paletteWidgetData = await FormDesigner.GetDraggedPaletteWidgetAsync();
+            var newComponentData = paletteWidgetData.CreateComponent();
+
+            await DropWidgetAtPositionAsync(newComponentData, null);
+            await FormDesigner.SelectComponentAsync(newComponentData);
+        }
+        else if (FormDesigner.IsDraggedItemComponent())
+        {
+            // you are trying to drag and drop a widget already defined
+            var componentData = await FormDesigner.GetDraggedComponentDataAsync();
+
+            await MoveComponentToPositionAsync(componentData, true);
+            await FormDesigner.SelectComponentAsync(componentData);
+        }
+        else
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    private async Task DropAfterComponentAsync()
+    {
+        if (FormDesigner.IsDraggedItemPaletteWidget())
+        {
+            // you are trying to drag and drop a new widget
+            var paletteWidgetData = await FormDesigner.GetDraggedPaletteWidgetAsync();
+            var newComponentData = paletteWidgetData.CreateComponent();
+
+            await DropWidgetAtPositionAsync(newComponentData, ComponentIndex + 1);
+            await FormDesigner.SelectComponentAsync(newComponentData);
+        }
+        else if (FormDesigner.IsDraggedItemComponent())
+        {
+            // you are trying to drag and drop a widget already defined
+            var componentData = await FormDesigner.GetDraggedComponentDataAsync();
+
+            await MoveComponentToPositionAsync(componentData, false);
+            await FormDesigner.SelectComponentAsync(componentData);
+        }
+        else
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    private async Task OnDropFinishedAsync(Guid elementId)
+    {
+        await JSRuntime.InvokeVoidAsync("formDesigner.utils.removeClassById",
+            elementId, DropZoneCssClassesWithoutSingleQuotes);
+    }
+
+    #region Helper Methods
+
+    // Algorithm:
+    // Move an item inside a row
+    // Test suite(we cannot test it right now)
+    // [1,2,3]
+    //
+    // Do not modify array
+    // 1 dropBefore 1 =  1,2,3
+    // 1 dropAfter 1 = 1,2,3
+    // 1 dropBefore 2 = 1,2,3
+    // 2 dropBefore 2 = 1,2,3
+    // 2 dropAfter 2 = 1,2,3
+    // 2 dropBefore 3 = 1,2,3
+    // 2 dropAfter 1 = 1,2,3
+    // 3 dropBefore 3 = 1,2,3
+    // 3 dropAfter 3 = 1,2,3
+    // 3 dropAfter 2 = 1,2,3
+    //
+    // Modify order
+    // 1 dropAfter 2 = 2,1,3
+    // 1 dropBefore 3 = 2,1,3
+    // 1 dropAfter 3 = 2,3,1
+    // 2 dropBefore 1 = 2,1,3
+    // 2 dropAfter 3 = 1,3,2
+    // 3 dropBefore 1 = 3,1,2
+    // 3 dropAfter 1 = 1,3,2
+    // 3 dropBefore 2 = 1,3,2
+
+    private async Task MoveComponentToPositionAsync(ComponentDto componentData, bool isComponentDroppedToLeftDropZone)
+    {
+        var destinationRow = ComponentRow;
+        int componentIndexInDestination = destinationRow.IndexOf(componentData);
+        bool isWidgetAlreadyInDestinationRow = componentIndexInDestination != -1;
+        int componentIndex = ComponentIndex;
+
+        // TODO: Check is component movable
+
+        // Increment index if it is the first item only and dropped to left dropzone area
+        if (componentIndex == 0 && !isComponentDroppedToLeftDropZone)
+        {
+            componentIndex++;
+        }
+
+        if (isWidgetAlreadyInDestinationRow)
+        {
+            // It means that the component is dragged and dropped in the same row
+
+            int destinationRowLength = destinationRow.Count;
+
+            // Do nothing for current component
+            if (componentIndexInDestination == ComponentIndex)
+            {
+                return;
+            }
+
+            // Do nothing if the component is dragged and dropped 
+            // into its left dropzone area
+            if (isComponentDroppedToLeftDropZone && componentIndexInDestination == 0 &&
+            ComponentIndex != destinationRowLength - 1)
+            {
+                return;
+            }
+
+            // Take an item and drag it to the before next to it
+            if (componentIndexInDestination + 1 == ComponentIndex && isComponentDroppedToLeftDropZone)
+            {
+                return;
+            }
+
+            // Take an item and drag it to the after's element next to it
+            if (componentIndexInDestination - 1 == ComponentIndex && !isComponentDroppedToLeftDropZone)
+            {
+                return;
+            }
+
+            // For the last item onDropBefore it should move left
+            if (isComponentDroppedToLeftDropZone && ComponentIndex == destinationRowLength - 1)
+            {
+                componentIndex--;
+            }
+
+            // move component to its new position in the row
+            destinationRow.MoveTo(componentIndexInDestination, componentIndex);
+        }
+        else
+        {
+            // de-attach widget from its previous position in origin row
+            await DetachComponentFromPreviousRowAsync(componentData, destinationRow);
+
+            if (ComponentIndex > 0 && !isComponentDroppedToLeftDropZone)
+            {
+                componentIndex++;
+            }
+
+            // add component to end of the destination row
+            await AddComponentToRowAsync(destinationRow, componentData, componentIndex);
+        }
+
+    }
+
+    private async Task DropWidgetAtPositionAsync(ComponentDto componentData, int? index)
+    {
+        int resultIndex = index ?? ComponentIndex;
+        await AddComponentToRowAsync(ComponentRow, componentData, resultIndex);
+    }
+
+    private async Task DetachComponentFromPreviousRowAsync(ComponentDto componentData,
+        List<ComponentDto> destinationRow)
+    {
+        var originRow = await FormDesigner.GetDraggedComponentOriginRowAsync();
+
+        // remove component from origin row
+        originRow.Remove(componentData);
+
+        var originContainer = await FormDesigner.GetDraggedComponentOriginContainerAsync();
+
+        if (destinationRow?.Count == 0 && destinationRow != originRow)
+        {
+            await originContainer.RemoveRowAsync(originRow);
+        }
+
+        if (originRow?.Count == 0 && destinationRow != originRow)
+        {
+            await originContainer.RemoveRowAsync(originRow);
+        }
+
+        await FormDesigner.SelectComponentAsync(null);
+    }
+
+    private async Task AddComponentToRowAsync(List<ComponentDto> currentRow,
+        ComponentDto componentData, int? index)
+    {
+        if (index.HasValue && index.Value >= 0)
+        {
+            currentRow.Insert(index.Value, componentData);
+        }
+        else
+        {
+            currentRow.Add(componentData);
+        }
+
+        ComponentUtils.ComputeEachItemSizeInRow(currentRow);
+        await Task.CompletedTask;
+    }
+
+    #endregion Helper Methods
+}

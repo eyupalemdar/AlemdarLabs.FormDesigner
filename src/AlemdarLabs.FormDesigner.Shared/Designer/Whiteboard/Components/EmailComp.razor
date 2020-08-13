@@ -1,0 +1,18 @@
+﻿@inherits WidgetComponentBase
+
+<form>
+    <div class="form-group">
+        <label for="@Component.Id"
+               class="col-form-label">
+            @Component.Label
+        </label>
+        <input id="@Component.Id"
+               type="email"
+               class="form-control"
+               placeholder="email@example.com" />
+    </div>
+</form>
+
+@code {
+
+}

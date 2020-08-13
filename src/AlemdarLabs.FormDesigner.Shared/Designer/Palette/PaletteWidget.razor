@@ -1,0 +1,35 @@
+﻿@if (WidgetItem != null)
+{
+    <div id="@WidgetItem.Id.ToString()"
+         class="fd-palette-widget text-center draggable"
+         draggable="true"
+         @ondragstart="@(async () => await DragStartAsync(WidgetItem))">
+
+        @if (!string.IsNullOrEmpty(WidgetItem.Icon))
+        {
+            <img class="fd-palette-widget-icon" src="@ComponentUtils.GetIconDataString(WidgetItem.Icon)" />
+        }
+        <h5 class="fd-palette-widget-label">@WidgetItem.Name</h5>
+
+    </div>
+    <MatTooltip Id="@string.Format("matBlazor_id_{0}", WidgetItem.Id)" 
+                TargetId="@WidgetItem.Id.ToString()"
+                Tooltip="@WidgetItem.Description" />
+}
+else
+{
+    <p>Widget could not be loaded</p>
+}
+
+@code {
+    [Parameter]
+    public PaletteWidgetDto WidgetItem { get; set; }
+
+    [CascadingParameter(Name = "FormDesigner")]
+    public FormDesigner FormDesigner { get; set; }
+
+    private async Task DragStartAsync(PaletteWidgetDto widgetItem)
+    {
+        await FormDesigner.SetDraggedPaletteWidgetAsync(widgetItem);
+    }
+}

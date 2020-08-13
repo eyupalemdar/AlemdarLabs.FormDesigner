@@ -1,0 +1,42 @@
+﻿<div class="prop-group-box">
+    <div class="box-header">Defaults</div>
+    <div class="padding-8">
+        <div class="form-group">
+            <label for="@ComponentData.Id-label"
+                   class="col-form-label">
+                Label
+            </label>
+            <input id="@ComponentData.Id-label"
+                   class="form-control"
+                   type="text"
+                   required
+                   value="@ComponentData.Label"
+                   @oninput="OnLabelChanged" />
+        </div>
+        <div class="form-group">
+            <label for="@ComponentData.Id-width"
+                   class="col-form-label">
+                Width
+            </label>
+            <input id="@ComponentData.Id-width"
+                   class="form-control"
+                   type="number"
+                   min="1"
+                   max="@ComponentUtils.MaxColumnWidth"
+                   required
+                   value="@ComponentData.Width"
+                   @oninput="OnWidthChanged" />
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public ComponentDto ComponentData { get; set; }
+
+    [Parameter]
+    public EventCallback<ChangeEventArgs> OnLabelChanged { get; set; }
+
+    [Parameter]
+    public EventCallback<ChangeEventArgs> OnWidthChanged { get; set; }
+}

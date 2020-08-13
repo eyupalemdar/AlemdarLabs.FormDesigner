@@ -1,0 +1,88 @@
+﻿@inject IJSRuntime JSRuntime
+
+<section class="component-mover component-caption">
+    <span style="margin-left:4px;">@Component.Type.GetName()</span>
+
+    @if (IsMoveLeftVisible())
+    {
+        <MatIconButton Icon="@MatIconNames.Arrow_back"
+                       OnClick="MoveLeftAsync"
+                       OnClickStopPropagation="true"
+                       Class="component-mover-icon"
+                       title="Move Left" />
+    }
+
+    @if (IsMoveRightVisible())
+    {
+        <MatIconButton Icon="@MatIconNames.Arrow_forward"
+                       OnClick="MoveRightAsync"
+                       OnClickStopPropagation="true"
+                       Class="component-mover-icon"
+                       title="Move Right" />
+    }
+
+    <MatIconButton Icon="@MatIconNames.Cancel"
+                   OnClick="OnDeleteAsync"
+                   OnClickStopPropagation="true"
+                   Class="component-mover-icon"
+                   title="Delete" />
+</section>
+
+@code {
+    [CascadingParameter(Name = "FormDesigner")]
+    public FormDesigner FormDesigner { get; set; }
+
+    [CascadingParameter(Name = "Container")]
+    public Container Container { get; set; }
+
+    [Parameter]
+    public List<ComponentDto> ComponentsInParentRow { get; set; }
+
+    [Parameter]
+    public ComponentDto Component { get; set; }
+
+    #region Move Left Button
+    private bool IsMoveLeftVisible()
+    {
+        return ComponentsInParentRow.IsMoveLeftPossible(Component);
+    }
+
+    private async Task MoveLeftAsync()
+    {
+        ComponentsInParentRow?.MoveLeft(Component);
+        await FormDesigner.StateHasChangedAsync();
+    }
+    #endregion Move Left Button
+
+    #region Move Right Button
+    private bool IsMoveRightVisible()
+    {
+        return ComponentsInParentRow.IsMoveRightPossible(Component);
+    }
+
+    private async Task MoveRightAsync()
+    {
+        ComponentsInParentRow?.MoveRight(Component);
+        await FormDesigner.StateHasChangedAsync();
+    }
+    #endregion Move Right Button
+
+    #region Delete Button
+    private async Task OnDeleteAsync()
+    {
+        // Remove component from the parent row 
+        ComponentsInParentRow.Remove(Component);
+
+        // remove row from parent container 
+        // if the row is empty and not last row in container
+        // otherwise there will be no drop zone to drag and drop new components
+        if (ComponentsInParentRow.Count == 0 && Container.ContainerData.Rows.Count != 1)
+        {
+            Container.ContainerData.Rows.Remove(ComponentsInParentRow);
+        }
+
+        await FormDesigner.SelectComponentAsync(null);
+        await FormDesigner.StateHasChangedAsync();
+    }
+    #endregion Delete Button
+}

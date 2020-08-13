@@ -1,0 +1,112 @@
+﻿@inject IJSRuntime JSRuntime
+
+<CascadingValue Value="this" Name="FormDesigner">
+    <div class="d-flex flex-column h-100 w-100">
+        <div class="d-flex flex-row h-100 w-100">
+            <div class="d-flex flex-column">
+                <PalettePanel />
+            </div>
+            <div class="d-flex flex-column flex-grow-1 container-space fd-scrollbar"
+                 @onclick="@(async () => await SelectComponentAsync(null))"
+                 @onclick:stopPropagation="true">
+                <Container ContainerData="ContainerData"
+                           OnClickCallback="@(async (e) => await SelectContainerAsync(ContainerData))" />
+            </div>
+            <div class="d-flex flex-column">
+                <FieldPropertiesPanel />
+            </div>
+        </div>
+    </div>
+</CascadingValue>
+
+@code {
+    [Parameter]
+    public ContainerDto ContainerData { get; set; }
+
+    private ContainerDto SelectedContainer = null;
+    private ComponentDto SelectedComponent = null;
+    private PaletteWidgetDto DraggedPaletteWidget = null;
+    private ComponentDto DraggedComponentData = null;
+    private List<ComponentDto> DraggedComponentOriginRow = null;
+    private ContainerDto DraggedComponentOriginContainer = null;
+
+    public async Task SelectContainerAsync(ContainerDto containerData)
+    {
+        SelectedContainer = containerData;
+        SelectedComponent = null;
+        await StateHasChangedAsync();
+    }
+    public async Task<ContainerDto> GetSelectedContainerAsync()
+    {
+        return await Task.FromResult(SelectedContainer);
+    }
+    public bool IsSelectedContainer(ContainerDto containerData)
+    {
+        return SelectedContainer != null && SelectedContainer == containerData;
+    }
+
+    public async Task SelectComponentAsync(ComponentDto componentData)
+    {
+        SelectedComponent = componentData;
+        SelectedContainer = null;
+        await StateHasChangedAsync();
+    }
+    public async Task<ComponentDto> GetSelectedComponentAsync()
+    {
+        return await Task.FromResult(SelectedComponent);
+    }
+    public bool IsSelectedComponent(ComponentDto component)
+    {
+        return SelectedComponent != null && SelectedComponent == component;
+    }
+
+    public async Task SetDraggedPaletteWidgetAsync(PaletteWidgetDto draggedPaletteWidget)
+    {
+        DraggedPaletteWidget = draggedPaletteWidget;
+        DraggedComponentData = null;
+        DraggedComponentOriginRow = null;
+        DraggedComponentOriginContainer = null;
+        await Task.CompletedTask;
+    }
+    public async Task<PaletteWidgetDto> GetDraggedPaletteWidgetAsync()
+    {
+        return await Task.FromResult(DraggedPaletteWidget);
+    }
+    public bool IsDraggedItemPaletteWidget()
+    {
+        return DraggedPaletteWidget != null && DraggedComponentData == null;
+    }
+
+    public async Task SetDraggedComponentAsync(ComponentDto draggedComponentData,
+        List<ComponentDto> draggedComponentOriginRow, ContainerDto draggedComponentOriginContainer)
+    {
+        DraggedComponentData = draggedComponentData;
+        DraggedComponentOriginRow = draggedComponentOriginRow;
+        DraggedComponentOriginContainer = draggedComponentOriginContainer;
+        DraggedPaletteWidget = null;
+        await Task.CompletedTask;
+    }
+    public async Task<ComponentDto> GetDraggedComponentDataAsync()
+    {
+        return await Task.FromResult(DraggedComponentData);
+    }
+    public async Task<List<ComponentDto>> GetDraggedComponentOriginRowAsync()
+    {
+        return await Task.FromResult(DraggedComponentOriginRow);
+    }
+    public async Task<ContainerDto> GetDraggedComponentOriginContainerAsync()
+    {
+        return await Task.FromResult(DraggedComponentOriginContainer);
+    }
+    public bool IsDraggedItemComponent()
+    {
+        return DraggedComponentData != null && DraggedPaletteWidget == null;
+    }
+
+    public async Task StateHasChangedAsync()
+    {
+        StateHasChanged();
+        await Task.CompletedTask;
+    }
+
+}

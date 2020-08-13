@@ -1,0 +1,56 @@
+﻿@page "/"
+@namespace AlemdarLabs.FormDesigner.Server.Pages
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="en" class="h-100 w-100 fd-scrollbar">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Form Designer - Server</title>
+    <base href="/" />
+
+    <!--Css Libraries-->
+    <link href="_content/AlemdarLabs.FormDesigner.Shared/lib/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="_content/MatBlazor/dist/matBlazor.css" rel="stylesheet" />
+
+    <!--Custom css files-->
+    <link href="_content/AlemdarLabs.FormDesigner.Shared/css/app.css" rel="stylesheet" />
+    <link href="_content/AlemdarLabs.FormDesigner.Shared/css/layout.css" rel="stylesheet" />
+    <link href="_content/AlemdarLabs.FormDesigner.Shared/css/toolbar.css" rel="stylesheet" />
+    <link href="_content/AlemdarLabs.FormDesigner.Shared/css/general.css" rel="stylesheet" />
+    <link href="_content/AlemdarLabs.FormDesigner.Shared/css/palette.css" rel="stylesheet" />
+    <link href="_content/AlemdarLabs.FormDesigner.Shared/css/field-properties.css" rel="stylesheet" />
+    <link href="_content/AlemdarLabs.FormDesigner.Shared/css/whiteboard/component.css" rel="stylesheet" />
+    <link href="_content/AlemdarLabs.FormDesigner.Shared/css/whiteboard/container.css" rel="stylesheet" />
+    <link href="_content/AlemdarLabs.FormDesigner.Shared/css/whiteboard/drag-drop.css" rel="stylesheet" />
+    <link href="_content/AlemdarLabs.FormDesigner.Shared/css/whiteboard/tabs.css" rel="stylesheet" />
+</head>
+<body class="container-fluid h-100 w-100">
+    <app>
+        <component type="typeof(App)" render-mode="ServerPrerendered" />
+    </app>
+
+    <div id="blazor-error-ui">
+        <environment include="Staging,Production">
+            An error has occurred. This application may no longer respond until reloaded.
+        </environment>
+        <environment include="Development">
+            An unhandled exception has occurred. See browser dev tools for details.
+        </environment>
+        <a href="" class="reload">Reload</a>
+        <a class="dismiss">🗙</a>
+    </div>
+
+    <script src="_framework/blazor.server.js"></script>
+
+    <!--JS Libraries-->
+    <script src="_content/MatBlazor/dist/matBlazor.js"></script>
+
+    <!--Cutom JS Libraries-->
+    <script src="_content/AlemdarLabs.FormDesigner.Shared/js/form-designer.js"></script>
+</body>
+</html>

@@ -1,0 +1,94 @@
+﻿<!DOCTYPE html>
+<html class="h-100 w-100 fd-scrollbar">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>Form Designer - WebAssembly</title>
+    <link href="manifest.json" rel="manifest" />
+
+    <!--Css Libraries-->
+    <link href="_content/AlemdarLabs.FormDesigner.Shared/lib/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="_content/MatBlazor/dist/matBlazor.css" rel="stylesheet" />
+
+    <!--Custom css files-->
+    <link href="_content/AlemdarLabs.FormDesigner.Shared/css/app.css" rel="stylesheet" />
+    <link href="_content/AlemdarLabs.FormDesigner.Shared/css/loading-screen.css" rel="stylesheet" />
+    <link href="_content/AlemdarLabs.FormDesigner.Shared/css/layout.css" rel="stylesheet" />
+    <link href="_content/AlemdarLabs.FormDesigner.Shared/css/toolbar.css" rel="stylesheet" />
+    <link href="_content/AlemdarLabs.FormDesigner.Shared/css/general.css" rel="stylesheet" />
+    <link href="_content/AlemdarLabs.FormDesigner.Shared/css/palette.css" rel="stylesheet" />
+    <link href="_content/AlemdarLabs.FormDesigner.Shared/css/field-properties.css" rel="stylesheet" />
+    <link href="_content/AlemdarLabs.FormDesigner.Shared/css/whiteboard/component.css" rel="stylesheet" />
+    <link href="_content/AlemdarLabs.FormDesigner.Shared/css/whiteboard/container.css" rel="stylesheet" />
+    <link href="_content/AlemdarLabs.FormDesigner.Shared/css/whiteboard/drag-drop.css" rel="stylesheet" />
+    <link href="_content/AlemdarLabs.FormDesigner.Shared/css/whiteboard/tabs.css" rel="stylesheet" />
+</head>
+
+<body class="container-fluid h-100 w-100">
+    <app>
+        <!--Loading Screen - Begin-->
+        <div id="applicationLoadingPanel" class="loading-items-center loading-font" style="height: 100vh;">
+            <div class="loading-items-center" style="flex-direction: column">
+                <div class="loading position-relative loading-items-center" style="position: relative">
+                    <div class="loading-border fd-border-secondary" style="position: absolute; border-color: #d9d9d9; height: 100%; width: 100%; border-radius: 50%"></div>
+                    <div class="loading-floated-circle loading-border fd-border-primary loading-border-primary" style="position: absolute; height: 100%; width: 100%; border-radius: 50%; border-left-color: transparent !important; border-right-color: transparent !important; border-bottom-color: transparent !important"></div>
+                    <div id="loadingBackground" class="loading-image-wrapper text-white fd-bg-primary loading-items-center circle-bg" style="color: #fff; border-radius: 50%">
+                        <img class="loading-image" src="_content/AlemdarLabs.FormDesigner.Shared/images/SplashScreen.svg" onload="document.getElementById('loadingBackground').classList.add('circle-bg')">
+                    </div>
+                </div>
+                <div class="loading-caption mt-4">FORM DESIGNER DEMO</div>
+                <div class="loading-sm-text text-muted mt-2" style="color: #a1a1a1">Loading...</div>
+            </div>
+        </div>
+        <!--Loading Screen - End-->
+    </app>
+
+    <!-- Start Single Page Apps for GitHub Pages -->
+    <script type="text/javascript">
+      // Single Page Apps for GitHub Pages
+      // https://github.com/rafrex/spa-github-pages
+      // Copyright (c) 2016 Rafael Pedicini, licensed under the MIT License
+      // ----------------------------------------------------------------------
+      // This script checks to see if a redirect is present in the query string
+      // and converts it back into the correct url and adds it to the
+      // browser's history using window.history.replaceState(...),
+      // which won't cause the browser to attempt to load the new url.
+      // When the single page app is loaded further down in this file,
+      // the correct url will be waiting in the browser's history for
+      // the single page app to route accordingly.
+      (function(l) {
+        if (l.search) {
+          var q = {};
+          l.search.slice(1).split('&').forEach(function(v) {
+            var a = v.split('=');
+            q[a[0]] = a.slice(1).join('=').replace(/~and~/g, '&');
+          });
+          if (q.p !== undefined) {
+            window.history.replaceState(null, null,
+              l.pathname.slice(0, -1) + (q.p || '') +
+              (q.q ? ('?' + q.q) : '') +
+              l.hash
+            );
+          }
+        }
+      }(window.location))
+    </script>
+    <!-- End Single Page Apps for GitHub Pages -->
+
+    <div id="blazor-error-ui">
+        An unhandled error has occurred.
+        <a href="" class="reload">Reload</a>
+        <a class="dismiss">🗙</a>
+    </div>
+    <script src="_framework/blazor.webassembly.js"></script>
+    <script>navigator.serviceWorker.register('service-worker.js');</script>
+
+    <!--JS Libraries-->
+    <script src="_content/MatBlazor/dist/matBlazor.js"></script>
+
+    <!--Cutom JS Libraries-->
+    <script src="_content/AlemdarLabs.FormDesigner.Shared/js/form-designer.js"></script>
+</body>
+
+</html>

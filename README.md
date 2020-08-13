@@ -30,4 +30,4 @@ This is a great sample which has a lot of Blazor + ASP.NET Core integrations suc
 - Progressive Web App (PWA)
 
 # License
-This project is licensed under the terms of the [MIT license](https://gitlab.com/eyupalemdar/formdesignerclient/blob/master/LICENSE).
+This project is licensed under the terms of the [MIT license](https://github.com/eyupalemdar/AlemdarLabs.FormDesigner/blob/master/LICENSE).

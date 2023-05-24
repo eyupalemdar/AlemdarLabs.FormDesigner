@@ -1,7 +1,7 @@
 # AlemdarLabs.FormDesigner
 
 This is a sample [Blazor](https://blazor.net) application inspired by [Geneu - Form Designer](https://designer.geneu.net).
-You can a build a form by drag and drop widgets and change their properties.
+You can build a form by drag and drop widgets and change their properties.
 
 The sample has both Blazor Server and WebAssembly solutions and both of them are sharing same code library.
 
